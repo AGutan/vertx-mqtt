@@ -364,6 +364,12 @@ public class RouteImpl implements Route {
     return removeTrailing(path1).equals(removeTrailing(path2));
   }
 
+  private boolean topicMatchesExact(String path1, String path2) {
+
+    return path1.equals(path2);
+
+  }
+
   private String removeTrailing(String path) {
     int i = path.length();
     if (path.charAt(i - 1) == '/') {
