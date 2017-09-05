@@ -22,6 +22,7 @@ import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.mqtt.messages.MqttPublishMessage;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentSkipListSet;
@@ -74,6 +75,13 @@ public class RouterImpl implements Router {
     if (log.isTraceEnabled()) log.trace("Router: " + System.identityHashCode(this) +
       " accepting request " + request.method() + " " + request.absoluteURI());
     new RoutingContextImpl(null, this, request, routes).next();
+  }
+
+  @Override
+  public void accept(MqttPublishMessage message) {
+    if (log.isTraceEnabled()) log.trace("MQTT Router: " + System.identityHashCode(this) +
+      " accepting message from topic " + message.topicName() + " with QoS " + message.qosLevel());
+    new RoutingContextImpl(null, this, message, routes).next();
   }
 
   @Override

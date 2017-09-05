@@ -109,7 +109,7 @@ public interface Route {
   Route handler(Handler<RoutingContext> requestHandler);
 
   @Fluent
-  Route mqttMessageHandler(Handler<MqttPublishMessage> requestHandler);
+  Route mqttMessageHandler(Handler<MqttPublishMessage> messageHandler);
 
   /**
    * Like {@link io.vertx.ext.web.Route#blockingHandler(Handler, boolean)} called with ordered = true

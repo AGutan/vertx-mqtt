@@ -23,6 +23,7 @@ import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.MIMEHeader;
+import io.vertx.mqtt.messages.MqttPublishMessage;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -49,6 +50,7 @@ public class RouteImpl implements Route {
   private int order;
   private boolean enabled = true;
   private List<Handler<RoutingContext>> contextHandlers;
+  private List<Handler<MqttPublishMessage>> mqttMessageHandlers;
   private int actualHandlerIndex;
   private List<Handler<RoutingContext>> failureHandlers;
   private int actualFailureHandlerIndex;
@@ -103,6 +105,13 @@ public class RouteImpl implements Route {
   }
 
   @Override
+  public synchronized Route topic(String path) {
+    checkTopic(path);
+    setTopic(path);
+    return this;
+  }
+
+  @Override
   public synchronized Route pathRegex(String regex) {
     setRegex(regex);
     return this;
@@ -139,6 +148,13 @@ public class RouteImpl implements Route {
   @Override
   public synchronized Route handler(Handler<RoutingContext> contextHandler) {
     this.contextHandlers.add(contextHandler);
+    checkAdd();
+    return this;
+  }
+
+  @Override
+  public synchronized Route mqttMessageHandler(Handler<MqttPublishMessage> messageHandler) {
+    this.mqttMessageHandlers.add(messageHandler);
     checkAdd();
     return this;
   }
@@ -373,6 +389,23 @@ public class RouteImpl implements Route {
     }
   }
 
+  private void setTopic(String path) {
+    // See if the path contains "+" - if so then it contains wildcard capture groups and we have to generate
+    // a regex for that
+    if (path.indexOf('+') != -1) {
+      createPatternRegex(path);
+      this.path = path;
+    } else {
+      if (path.charAt(path.length() - 1) != '*') {
+        exactPath = true;
+        this.path = path;
+      } else {
+        exactPath = false;
+        this.path = path.substring(0, path.length() - 1);
+      }
+    }
+  }
+
   private void setRegex(String regex) {
     pattern = Pattern.compile(regex);
   }
@@ -410,6 +443,12 @@ public class RouteImpl implements Route {
   private void checkPath(String path) {
     if ("".equals(path) || path.charAt(0) != '/') {
       throw new IllegalArgumentException("Path must start with /");
+    }
+  }
+
+  private void checkTopic(String path) {
+    if ("".equals(path) || path.charAt(0) == '/') {
+      throw new IllegalArgumentException("Path must not start with /");
     }
   }
 

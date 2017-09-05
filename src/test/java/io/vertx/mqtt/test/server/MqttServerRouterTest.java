@@ -1,7 +1,6 @@
 package io.vertx.mqtt.test.server;
 
 import io.netty.handler.codec.mqtt.MqttQoS;
-import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.logging.Logger;
@@ -12,10 +11,8 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.mqtt.MqttEndpoint;
 import io.vertx.mqtt.MqttServer;
 import io.vertx.mqtt.MqttServerOptions;
-import io.vertx.mqtt.messages.MqttPublishMessage;
 import io.vertx.mqtt.routing.Route;
 import io.vertx.mqtt.routing.Router;
-import io.vertx.mqtt.routing.RoutingContext;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -69,8 +66,7 @@ public class MqttServerRouterTest {
 
     }).listen();
 
-    Route tempsGroup1 = router.route().path("/groupOne/+/deviceId");
-    Route lightGroup2 = router.route().path("/groupTwo/+/deviceId");
+    Route tempsGroup1 = router.route().path("/foo/+/bar");
 
     tempsGroup1.mqttMessageHandler(message -> {
 
