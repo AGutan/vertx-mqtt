@@ -330,6 +330,31 @@ public class RouteImpl implements Route {
     return true;
   }
 
+  synchronized boolean matchesMqtt(RoutingContext context, String mountPoint, boolean failure) {
+
+    if (failure && !hasNextFailureHandler() || !failure && !hasNextContextHandler()) {
+      return false;
+    }
+    if (!enabled) {
+      return false;
+    }
+    MqttPublishMessage message = context.message();
+
+    if (path != null && pattern == null && !pathMatches(mountPoint, context)) {
+      return false;
+    }
+    if (pattern != null) {
+      String path = useNormalisedPath ? Utils.normalizePath(context.message().topicName()) : context.message().topicName();
+      if (mountPoint != null) {
+        path = path.substring(mountPoint.length());
+      }
+
+    }
+
+    return true;
+  }
+
+
   RouterImpl router() {
     return router;
   }
@@ -359,15 +384,34 @@ public class RouteImpl implements Route {
     }
   }
 
+  private boolean topicMatches(String mountPoint, RoutingContext ctx) {
+    String thePath = mountPoint == null ? path : mountPoint + path;
+    String requestPath;
+
+    if (useNormalisedPath) {
+      // never null
+      requestPath = Utils.normalizePath(ctx.message().topicName());
+    } else {
+      requestPath = ctx.message().topicName();
+      // can be null
+      if (requestPath == null) {
+        requestPath = "";
+      }
+    }
+
+    if (exactPath) {
+      return pathMatchesExact(requestPath, thePath);
+    } else {
+      if (thePath.endsWith("/") && requestPath.equals(removeTrailing(thePath))) {
+        return true;
+      }
+      return requestPath.startsWith(thePath);
+    }
+  }
+
   private boolean pathMatchesExact(String path1, String path2) {
     // Ignore trailing slash when matching paths
     return removeTrailing(path1).equals(removeTrailing(path2));
-  }
-
-  private boolean topicMatchesExact(String path1, String path2) {
-
-    return path1.equals(path2);
-
   }
 
   private String removeTrailing(String path) {

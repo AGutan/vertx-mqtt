@@ -27,6 +27,7 @@ import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.User;
+import io.vertx.mqtt.messages.MqttPublishMessage;
 
 import java.util.List;
 import java.util.Map;
@@ -65,6 +66,9 @@ public interface RoutingContext {
   @CacheReturn
   HttpServerResponse response();
 
+  @CacheReturn
+  MqttPublishMessage message();
+
   /**
    * Tell the router to route this context to the next matching route (if any).
    * This method, if called, does not need to be called during the execution of the handler, it can be called
@@ -74,6 +78,8 @@ public interface RoutingContext {
    * will be sent.
    */
   void next();
+
+  void nextMqtt();
 
   /**
    * Fail the context with the specified status code.

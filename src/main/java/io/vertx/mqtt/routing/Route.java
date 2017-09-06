@@ -52,6 +52,9 @@ public interface Route {
   @Fluent
   Route path(String path);
 
+  @Fluent
+  Route topic(String path);
+
   /**
    * Set the path prefix as a regular expression. If set then this route will only match request URI paths, the beginning
    * of which match the regex. Only a single path or path regex can be set for a route.
